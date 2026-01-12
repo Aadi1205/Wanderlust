@@ -1,9 +1,9 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
-
 const express = require("express");
 const app = express();
+app.set("trust proxy", 1); // trust first proxy
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
@@ -22,7 +22,6 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 //config
-
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
@@ -46,18 +45,21 @@ store.on("error", () => {
   console.log("Mongo session store error", err);
 });
 
-//use sessions
+//session middleware
 const sessionOptions = {
   store,
-  secret: process.env.SESSION_SECRET || process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || "devsecret",
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 };
+
 
 app.use(session(sessionOptions));
 app.use(flash());
