@@ -136,7 +136,24 @@ PROJECT/
 
 ## 📸 Screenshots
 
-*Add screenshots here (Home, Login, Create Listing, Listing Details, Reviews)*
+### Home Page
+![Home Page](screenshots/homePage.png)
+
+### Filters
+![Filters](screenshots/filters.png)
+
+### Listing Details
+![Listing Page](screenshots/showListing.png)
+
+### Create Listing
+![Create Listing](screenshots/createListing.png)
+
+### Reviews
+![Reviews](screenshots/rating.png)
+
+### Map 
+![Map](screenshots/map.png)
+
 
 ---
 
