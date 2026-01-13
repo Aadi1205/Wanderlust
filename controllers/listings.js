@@ -1,16 +1,30 @@
 const Listing = require("../models/listing");
 
 async function geocodeLocation(location) {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-      location
-    )}`
-  );
-  const data = await res.json();
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        location
+      )}`,
+      {
+        headers: {
+          "User-Agent": "wanderlust-app",
+        },
+        timeout: 5000,
+      }
+    );
 
-  return data[0]
-    ? [parseFloat(data[0].lon), parseFloat(data[0].lat)]
-    : [77.209, 28.6139]; // fallback Delhi
+    if (!res.ok) throw new Error("Geocoding failed");
+
+    const data = await res.json();
+
+    return data[0]
+      ? [parseFloat(data[0].lon), parseFloat(data[0].lat)]
+      : [77.209, 28.6139];
+  } catch (err) {
+    console.error("Geocoding error:", err.message);
+    return [77.209, 28.6139]; // fallback Delhi
+  }
 }
 
 //creatgin
@@ -64,31 +78,35 @@ module.exports.showListing = async (req, res) => {
 
 //create Route
 module.exports.createListing = async (req, res, next) => {
-  if (!req.file) {
-    req.flash("error", "Image is required to create a listing.");
-    return res.redirect("/listings/new");
+  try {
+    if (!req.file) {
+      req.flash("error", "Image is required to create a listing.");
+      return res.redirect("/listings/new");
+    }
+
+    const newListing = new Listing(req.body.listing);
+    newListing.owner = req.user._id;
+
+    const coords = await geocodeLocation(req.body.listing.location);
+
+    newListing.geometry = {
+      type: "Point",
+      coordinates: coords,
+    };
+
+    newListing.image = {
+      url: req.file.path,
+      filename: req.file.filename,
+    };
+
+    await newListing.save();
+
+    req.flash("success", "Successfully made a new listing");
+    return res.redirect("/listings");
+  } catch (err) {
+    console.error("CREATE LISTING ERROR:", err);
+    return next(err);
   }
-
-  const newListing = new Listing(req.body.listing);
-  newListing.owner = req.user._id;
-
-  // Convert location -> real coordinates
-  const coords = await geocodeLocation(req.body.listing.location);
-
-  newListing.geometry = {
-    type: "Point",
-    coordinates: coords,
-  };
-
-  newListing.image = {
-    url: req.file.path,
-    filename: req.file.filename,
-  };
-
-  await newListing.save();
-
-  req.flash("success", "Successfully made a new listing");
-  return res.redirect("/listings");
 };
 
 //edit Route controller will be added in routes/listing.js
