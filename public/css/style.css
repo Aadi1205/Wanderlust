@@ -14,10 +14,22 @@ body {
     background: white;
 }
 
-.fa-compass {
-    color: #fe424d;
-    font-size: 2rem;
+/* Fix transparent mobile menu */
+@media (max-width: 768px) {
+  .navbar-collapse {
+    background-color: #ffffff;
+    padding: 12px;
+    border: 3px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
 }
+
+.navbar-logo {
+  height: 28px;     
+  width: auto;
+  object-fit: contain;
+}
+
 
 #filters {
       display: flex;
@@ -156,7 +168,7 @@ body {
 
 /* show page */
 .show-img {
-    height: 30vh;
+    height: 40vh;
 }
 
 .btns {
@@ -166,4 +178,50 @@ body {
 .show-card {
     padding-left: 0 !important;
     padding-right: 0 !important;
+}
+
+/* review card styling*/
+.review-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.review-card:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.review-user {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.review-comment {
+  font-size: 0.95rem;
+  color: #374151;
+  margin: 10px 0 14px;
+  line-height: 1.5;
+}
+
+.review-delete-btn {
+  align-self: flex-end;
+}
+
+#editImagePreview {
+    height: 30vh;
+    width: auto;
 }

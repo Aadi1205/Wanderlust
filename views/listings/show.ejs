@@ -4,7 +4,7 @@
 
     <!-- Title -->
     <div class="row">
-      <div class="col-6 offset-3 mt-3">
+      <div class="col-12 col-md-6 offset-md-3 mt-3 px-3">
         <h3>
           <%= listing.title %>
         </h3>
@@ -13,7 +13,7 @@
 
     <!-- Listing Card -->
     <div class="row">
-      <div class="card col-6 offset-3 show-card border-0">
+      <div class="card col-12 col-md-6 offset-md-3 show-card border-0 px-3">
         <img
           src="<%= listing.image.url || 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?auto=format&fit=crop&w=800&q=60' %>"
           class="card-img-top show-img" alt="Listing image" />
@@ -56,12 +56,13 @@
     <!-- Buttons -->
     <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
       <div class="row mt-3">
-        <div class="col-6 offset-3 d-flex gap-4">
+        <div class="col-12 col-md-6 offset-md-3 d-flex gap-4">
           <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">Edit</a>
 
-          <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST">
-            <button class="btn btn-danger">Delete</button>
+          <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST" class="delete-listing-form">
+            <button type="submit" class="btn btn-danger">Delete</button>
           </form>
+
         </div>
       </div>
       <br>
@@ -70,7 +71,7 @@
         <!-- Review Form -->
         <% if (currUser) { %>
           <div class="row">
-            <div class="col-6 offset-3">
+            <div class="col-12 col-md-6 offset-md-3">
               <hr>
               <h4 class="mb-3">Leave a review</h4>
 
@@ -119,42 +120,49 @@
           </div>
           <% } %>
 
-            <% if(listing.reviews.length> 0) { %>
-              <!-- Reviews -->
+            <!-- All Reviews -->
+            <% if (listing.reviews.length> 0) { %>
               <div class="row">
-                <div class="col-6 offset-3 mb-5">
+                <div class="col-12 col-md-6 offset-md-3 mb-5">
                   <hr>
+                  <p><b>All Reviews</b></p>
+
                   <div class="row">
-                    <p><b>All Reviews</b></p>
                     <% for (let review of listing.reviews) { %>
-                      <div class="col-md-6 mb-3">
-                        <div class="card h-100">
-                          <div class="card-body">
-                            <h5 class="card-title">
-                              @<%= review.author.username %>
-                            </h5>
 
-                            <p class="card-text">
-                              <%= review.comment %>
-                            </p>
+                      <div class="col-12 col-md-6 mb-3">
+                        <div class="review-card">
 
-                            <p class="starability-result" data-rating="<%= review.rating %>"></p>
+                          <div class="review-header">
+                            <span class="review-user">@<%= review.author.username %></span>
+                            <span class="starability-result" data-rating="<%= review.rating %>"></span>
                           </div>
 
-                          <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-                            method="POST" class="mb-3">
-                            <button class="btn btn-sm btn-dark">Delete</button>
-                          </form>
+                          <p class="review-comment">
+                            <%= review.comment %>
+                          </p>
+
+                          <% if (currUser && review.author && review.author._id.equals(currUser._id)) { %>
+                            <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                              method="POST" class="delete-review-form">
+                              <button type="submit" class="btn btn-sm btn-outline-danger review-delete-btn">
+                                Delete
+                              </button>
+                            </form>
+                            <% } %>
                         </div>
                       </div>
+
                       <% } %>
                   </div>
                 </div>
               </div>
               <% } %>
 
+
+                <!-- Map -->
                 <div class="row">
-                  <div class="col-6 offset-3">
+                  <div class="col-12 col-md-6 offset-md-3">
                     <hr>
                     <div id="map" data-coords='<%= JSON.stringify(listing.geometry?.coordinates || [0,0]) %>'
                       data-title="<%= listing.title %>" style="height: 350px; border-radius: 10px;"></div>
@@ -164,4 +172,6 @@
 
 
                 <script src="/js/map.js"></script>
+                <script src="/js/confirmDelete.js"></script>
+
   </body>

@@ -1,4 +1,5 @@
 const Listing = require("../models/listing");
+const { cloudinary } = require("../cloudConfig");
 
 async function geocodeLocation(location) {
   try {
@@ -102,7 +103,10 @@ module.exports.createListing = async (req, res, next) => {
     await newListing.save();
 
     req.flash("success", "Successfully made a new listing");
-    return res.redirect("/listings");
+
+    req.session.save(() => {
+      res.redirect("/listings");
+    });
   } catch (err) {
     console.error("CREATE LISTING ERROR:", err);
     return next(err);
