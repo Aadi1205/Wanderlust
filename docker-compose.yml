@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wanderlust:latest
+    container_name: wanderlust-app
+    # Host 3000 -> container 8080. app.js hardcodes app.listen(8080); rather
+    # than change application code to match a literal 3000:3000 mapping, the
+    # app is reached at http://localhost:3000 on the host while keeping its
+    # existing internal port untouched.
+    ports:
+      - "3000:8080"
+    # All configuration (ATLAS_DB_URL, SESSION_SECRET, Cloudinary/Razorpay
+    # keys, NODE_ENV, ...) comes from your existing .env file - nothing is
+    # hardcoded here. No Mongo service is defined: this app talks to
+    # MongoDB Atlas directly via ATLAS_DB_URL.
+    env_file:
+      - .env
+    restart: unless-stopped
