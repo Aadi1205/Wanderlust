@@ -19,8 +19,18 @@ const storage = new CloudinaryStorage({
     allowed_formats: ['jpg', 'png', 'jpeg'],
   },
 });
- 
+
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'wanderlust_avatars', // The name of the folder in cloudinary
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }],
+  },
+});
+
 module.exports = {
     cloudinary,
-    storage
+    storage,
+    avatarStorage
 }

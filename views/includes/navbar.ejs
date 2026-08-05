@@ -35,7 +35,9 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link" href="/listings">Explore</a>
-        <a class="nav-link" href="/listings/new">Add new Listings</a>
+        <% if(currUser && currUser.role==="owner" ) { %>
+          <a class="nav-link" href="/listings/new">Add listing</a>
+          <% } %>
       </div>
       <div class="navbar-nav ms-auto">
         <form class="d-flex" role="search" action="/listings/search" method="GET">
@@ -50,8 +52,16 @@
           <a class="nav-link" href="/login"><b>Log in</b></a>
           <%}%>
             <% if(currUser) { %>
-              <a class="nav-link" href="/logout">Log out</a>
-              <%}%>
+              <a class="nav-link" href="/trips">My trips</a>
+              <a class="nav-link" href="/listings/wishlist">Wishlist</a>
+              <% if(currUser.role==="owner" ) { %>
+                <a class="nav-link" href="/dashboard/bookings">Reservations</a>
+                <% } else { %>
+                  <a class="nav-link" href="/become-a-host">Become a host</a>
+                  <% } %>
+                    <a class="nav-link" href="/users/<%= currUser._id %>">My profile</a>
+                    <a class="nav-link" href="/logout">Log out</a>
+                    <%}%>
       </div>
     </div>
   </div>

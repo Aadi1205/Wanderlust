@@ -1,4 +1,6 @@
+const mongoose = require("mongoose");
 const Listing = require("../models/listing");
+const User = require("../models/user.js");
 const { cloudinary } = require("../cloudConfig");
 
 async function geocodeLocation(location) {
@@ -33,6 +35,59 @@ module.exports.renderSignupForm = (req, res) => {
   return res.render("users/signup.ejs");
 };
 
+const CATEGORIES = [
+  "Trending",
+  "Room",
+  "Iconic",
+  "Mountain",
+  "Castles",
+  "Pools",
+  "Camping",
+  "Farms",
+  "Arctic",
+  "Domes",
+  "Boat",
+];
+
+//shared by index/search (full page) and filterListings (AJAX partial) so
+//filters always behave identically across both entry points
+function buildListingFilter(query) {
+  const { category, owner, location, minPrice, maxPrice } = query;
+  const filter = {};
+
+  if (category) filter.category = category;
+  if (owner && mongoose.Types.ObjectId.isValid(owner)) filter.owner = owner;
+  if (location) filter.location = location;
+
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice && !isNaN(minPrice)) filter.price.$gte = Number(minPrice);
+    if (maxPrice && !isNaN(maxPrice)) filter.price.$lte = Number(maxPrice);
+  }
+
+  return filter;
+}
+
+function buildListingSort(sort) {
+  if (sort === "price_asc") return { price: 1 };
+  if (sort === "price_desc") return { price: -1 };
+  return {};
+}
+
+//dropdown options for the filter sidebar - derived from real listing data
+//(owners/locations) plus the static category enum
+async function getFilterOptions() {
+  const ownerIds = await Listing.distinct("owner");
+  const owners = await User.find({ _id: { $in: ownerIds } }, "username").sort(
+    "username"
+  );
+  const locations = (await Listing.distinct("location"))
+    .filter(Boolean)
+    .sort();
+
+  return { owners, locations, categories: CATEGORIES };
+}
+
 //creating a controller for listings (functions to be used in routes)
 // module.exports.index = async (req, res) => {
 //   const allListings = await Listing.find({});
@@ -40,17 +95,44 @@ module.exports.renderSignupForm = (req, res) => {
 // };
 
 module.exports.index = async (req, res) => {
-  const { category } = req.query;
+  const { category, owner, location, minPrice, maxPrice, sort } = req.query;
 
-  let allListings;
+  const allListings = await Listing.find(buildListingFilter(req.query)).sort(
+    buildListingSort(sort)
+  );
+  const { owners, locations, categories } = await getFilterOptions();
 
-  if (category) {
-    allListings = await Listing.find({ category });
-  } else {
-    allListings = await Listing.find({});
-  }
+  return res.render("listings/index.ejs", {
+    allListings,
+    category,
+    owner,
+    location,
+    minPrice,
+    maxPrice,
+    sort,
+    owners,
+    locations,
+    categories,
+  });
+};
 
-  return res.render("listings/index.ejs", { allListings, category });
+//filter sidebar Route - returns rendered grid HTML + count so the client can
+//swap it in without a full page reload
+module.exports.filterListings = async (req, res) => {
+  const { sort } = req.query;
+
+  const allListings = await Listing.find(buildListingFilter(req.query)).sort(
+    buildListingSort(sort)
+  );
+
+  res.render(
+    "includes/listingsGrid.ejs",
+    { allListings },
+    (err, html) => {
+      if (err) throw err;
+      return res.json({ html, count: allListings.length });
+    }
+  );
 };
 
 //new Route controller
@@ -170,6 +252,40 @@ module.exports.deleteListing = async (req, res) => {
   return res.redirect("/listings");
 };
 
+//My Wishlist Route
+module.exports.renderWishlist = async (req, res) => {
+  const user = await User.findById(req.user._id).populate("wishlist");
+  return res.render("listings/wishlist.ejs", { listings: user.wishlist });
+};
+
+//toggle wishlist Route
+module.exports.toggleWishlist = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ success: false, message: "Listing not found" });
+  }
+
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    return res.status(404).json({ success: false, message: "Listing not found" });
+  }
+
+  const user = await User.findById(req.user._id);
+  const index = user.wishlist.findIndex((listingId) => listingId.equals(id));
+
+  let wishlisted;
+  if (index === -1) {
+    user.wishlist.push(id);
+    wishlisted = true;
+  } else {
+    user.wishlist.splice(index, 1);
+    wishlisted = false;
+  }
+  await user.save();
+
+  return res.json({ success: true, wishlisted });
+};
+
 module.exports.search = async (req, res) => {
   const { q } = req.query;
 
@@ -183,6 +299,18 @@ module.exports.search = async (req, res) => {
   const allListings = await Listing.find({
     $or: [{ title: regex }, { country: regex }],
   });
+  const { owners, locations, categories } = await getFilterOptions();
 
-  return res.render("listings/index.ejs", { allListings, category: null });
+  return res.render("listings/index.ejs", {
+    allListings,
+    category: null,
+    owner: null,
+    location: null,
+    minPrice: null,
+    maxPrice: null,
+    sort: null,
+    owners,
+    locations,
+    categories,
+  });
 };

@@ -28,3 +28,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Booking cancel confirmation
+document.addEventListener("DOMContentLoaded", () => {
+  const cancelBookingForms = document.querySelectorAll(".cancel-booking-form");
+
+  cancelBookingForms.forEach(form => {
+    form.addEventListener("submit", (e) => {
+      const confirmed = confirm("Are you sure you want to cancel this booking?");
+
+      if (!confirmed) {
+        e.preventDefault();
+      }
+    });
+  });
+});
+

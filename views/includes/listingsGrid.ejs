@@ -1,0 +1,17 @@
+<% if (allListings.length === 0) { %>
+  <div class="col-12 d-flex justify-content-center mt-5">
+    <div class="text-center p-4 border rounded shadow-sm" style="max-width: 400px;">
+      <i class="fa-regular fa-face-frown fa-2x mb-3 text-danger"></i>
+      <h5>No listings found</h5>
+      <p class="text-muted mb-2">Try adjusting or clearing your filters.</p>
+      <a href="/listings" class="btn btn-outline-danger btn-sm">Back to explore</a>
+    </div>
+  </div>
+  <% } %>
+
+    <% const wishlistedIds=new Set((currUser && currUser.wishlist ? currUser.wishlist : []).map(function(id) {
+      return id.toString() })); %>
+
+      <% for(let listing of allListings) { %>
+        <%- include("listingCard.ejs", { listing, wishlistedIds }) %>
+          <% } %>

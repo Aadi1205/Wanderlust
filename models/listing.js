@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review.js");
+const Booking = require("./booking.js");
+const toUTCMidnight = require("../utils/normalizeDate.js");
 
 const listingSchema = new Schema({
   title: {
@@ -69,13 +71,35 @@ const listingSchema = new Schema({
     "Boat"
   ],
   required: true
-}
+},
+  //cached from Review docs so the index/show pages don't need to populate
+  //every listing's reviews just to show a number - kept in sync in
+  //controllers/reviews.js whenever a review is created/deleted
+  avgRating: {
+    type: Number,
+    default: 0,
+  },
+  reviewCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 //handling: Delete listing: Post middleware
 listingSchema.post("findOneAndDelete", async(listing) => {
   if(listing) {
     await Review.deleteMany({_id: {$in: listing.reviews}});
+
+    //cancel (never delete) this listing's future bookings; attributed to the
+    //host since deleting the listing is the host's action
+    await Booking.updateMany(
+      {
+        listing: listing._id,
+        status: { $in: ["pending", "confirmed"] },
+        checkOut: { $gt: toUTCMidnight(new Date()) },
+      },
+      { $set: { status: "cancelled", cancelledBy: "host" } }
+    );
   }
 });
 

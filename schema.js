@@ -35,3 +35,20 @@ module.exports.reviewSchema = Joi.object({
     rating: Joi.number().required().min(1).max(5),
   }).required(),
 });
+
+module.exports.bookingSchema = Joi.object({
+  booking: Joi.object({
+    checkIn: Joi.date().required(),
+    checkOut: Joi.date().required().greater(Joi.ref("checkIn")),
+    guests: Joi.number().integer().min(1).max(16).required(),
+  }).required(),
+});
+
+module.exports.profileSchema = Joi.object({
+  user: Joi.object({
+    fullName: Joi.string().max(60).allow("").optional(),
+    bio: Joi.string().max(500).allow("").optional(),
+    location: Joi.string().max(100).allow("").optional(),
+    email: Joi.string().email({ tlds: false }).required(),
+  }).required(),
+});

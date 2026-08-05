@@ -20,10 +20,23 @@ const User = require("./models/user.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
+const bookingRouter = require("./routes/booking.js");
+const paymentRouter = require("./routes/payment.js");
+const paymentsController = require("./controllers/payments.js");
+const wrapAsync = require("./utils/wrapAsync.js");
 
 //config
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+//Razorpay webhook needs the raw request body to verify its signature, so it
+//must be registered before express.json() parses (and consumes) the body
+app.post(
+  "/webhooks/razorpay",
+  express.raw({ type: "application/json" }),
+  wrapAsync(paymentsController.handleWebhook)
+);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
@@ -75,6 +88,7 @@ passport.deserializeUser(User.deserializeUser()); //to remove user info from ses
 async function main() {
   await mongoose.connect(dbUrl); //connect to mongodb atlas
 }
+
 //use main func
 main()
   .then(() => {
@@ -107,9 +121,23 @@ app.use("/listings/:id/reviews", reviewRouter);
 // use user routes
 app.use("/", userRouter);
 
+//-----Bookings-----
+app.use("/", bookingRouter);
+
+//-----Payments-----
+app.use("/", paymentRouter);
+
 //Middleware
 app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
+});
+
+app.use((err, req, res, next) => {
+  if (err.code === "LIMIT_FILE_SIZE") {
+    req.flash("error", "Photo must be under 3 MB");
+    return res.redirect(`/users/${req.params.id}/edit`);
+  }
+  next(err);
 });
 
 app.use((err, req, res, next) => {

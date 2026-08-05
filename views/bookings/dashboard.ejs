@@ -1,0 +1,71 @@
+<% layout("layouts/boilerplate") %>
+
+  <div class="row mt-3">
+    <div class="col-12 col-md-10 offset-md-1 px-3">
+      <h3 class="mb-4">Reservations</h3>
+
+      <div class="row booking-summary-strip mb-4">
+        <div class="col-4 booking-summary-tile">
+          <p class="booking-summary-value">
+            <%= summary.upcomingCount %>
+          </p>
+          <p class="booking-summary-label">Upcoming</p>
+        </div>
+        <div class="col-4 booking-summary-tile">
+          <p class="booking-summary-value">
+            <%= summary.totalNights %>
+          </p>
+          <p class="booking-summary-label">Total nights</p>
+        </div>
+        <div class="col-4 booking-summary-tile">
+          <p class="booking-summary-value">&#8377;<%= summary.grossEarnings.toLocaleString("en-IN") %>
+          </p>
+          <p class="booking-summary-label">Gross earnings</p>
+        </div>
+      </div>
+
+      <% if (bookings.length===0) { %>
+        <p class="text-muted">No reservations yet.</p>
+        <% } %>
+
+          <div class="row">
+            <% for (let booking of bookings) { %>
+              <div class="col-12 col-md-6 mb-3">
+                <div class="trip-card">
+                  <div class="trip-card-header">
+                    <% if (booking.listing) { %>
+                      <a href="/listings/<%= booking.listing._id %>">
+                        <%= booking.listing.title %>
+                      </a>
+                      <% } else { %>
+                        <span class="text-muted">Listing no longer available</span>
+                        <% } %>
+                          <span class="badge trip-badge trip-badge-<%= booking.status %>">
+                            <%= booking.status %>
+                          </span>
+                  </div>
+                  <p class="trip-card-dates">Guest: <%= booking.guest.username %>
+                  </p>
+                  <p class="trip-card-dates">
+                    <%= booking.checkIn.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) %>
+                      &rarr;
+                      <%= booking.checkOut.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) %>
+                        &middot;
+                        <%= booking.nights %> night<%= booking.nights> 1 ? "s" : "" %> &middot;
+                          <%= booking.guests %> guest<%= booking.guests> 1 ? "s" : "" %>
+                  </p>
+                  <p class="trip-card-total">&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %> total</p>
+
+                  <% if (booking.status==="confirmed" || booking.status==="pending" ) { %>
+                    <form action="/bookings/<%= booking._id %>/cancel" method="POST" class="cancel-booking-form">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                    </form>
+                    <% } %>
+                </div>
+              </div>
+              <% } %>
+          </div>
+    </div>
+  </div>
+
+  <script src="/js/confirmDelete.js"></script>

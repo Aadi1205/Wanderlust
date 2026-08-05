@@ -4,10 +4,19 @@
 
     <!-- Title -->
     <div class="row">
-      <div class="col-12 col-md-6 offset-md-3 mt-3 px-3">
-        <h3>
+      <div class="col-12 col-md-6 offset-md-3 mt-3 px-3 d-flex justify-content-between align-items-start">
+        <h3 class="mb-0">
           <%= listing.title %>
         </h3>
+        <% if (currUser) { %>
+          <% const isWishlisted=currUser.wishlist && currUser.wishlist.some(function(id) { return
+            id.equals(listing._id) }); %>
+            <button type="button"
+              class="wishlist-heart-btn wishlist-heart-btn-inline <%= isWishlisted ? 'active' : '' %>"
+              data-listing-id="<%= listing._id %>" aria-label="Save to wishlist">
+              <i class="<%= isWishlisted ? 'fa-solid' : 'fa-regular' %> fa-heart"></i>
+            </button>
+            <% } %>
       </div>
     </div>
 
@@ -22,8 +31,18 @@
           <p class="card-text">
             <b>Owned By:</b>
             <i>
-              <%= listing.owner.username %>
+              <a href="/users/<%= listing.owner._id %>"><%= listing.owner.username %></a>
             </i>
+          </p>
+
+          <p class="card-text">
+            <% if (listing.reviewCount> 0) { %>
+              <i class="fa-solid fa-star text-warning"></i>
+              <%= listing.avgRating.toFixed(1) %> <span class="text-muted">(<%= listing.reviewCount %>
+                  review<%= listing.reviewCount> 1 ? "s" : "" %>)</span>
+              <% } else { %>
+                <span class="text-muted">No reviews yet</span>
+                <% } %>
           </p>
 
           <p class="card-text">
@@ -68,7 +87,25 @@
       <br>
       <% } %>
 
-        <!-- Review Form -->
+        <!-- Booking CTA -->
+        <% if (currUser && !currUser._id.equals(listing.owner._id)) { %>
+          <div class="row mt-3">
+            <div class="col-12 col-md-6 offset-md-3">
+              <a href="/listings/<%= listing._id %>/reserve" class="btn btn-dark add-btn w-100">Book now</a>
+            </div>
+          </div>
+          <% } else if (!currUser) { %>
+            <div class="row mt-3">
+              <div class="col-12 col-md-6 offset-md-3">
+                <div class="booking-widget text-center">
+                  <p class="mb-2">Want to book this stay?</p>
+                  <a href="/login" class="btn btn-dark add-btn">Log in to book</a>
+                </div>
+              </div>
+            </div>
+            <% } %>
+
+              <!-- Review Form -->
         <% if (currUser) { %>
           <div class="row">
             <div class="col-12 col-md-6 offset-md-3">
@@ -134,7 +171,7 @@
                         <div class="review-card">
 
                           <div class="review-header">
-                            <span class="review-user">@<%= review.author.username %></span>
+                            <span class="review-user"><a href="/users/<%= review.author._id %>">@<%= review.author.username %></a></span>
                             <span class="starability-result" data-rating="<%= review.rating %>"></span>
                           </div>
 
@@ -173,5 +210,6 @@
 
                 <script src="/js/map.js"></script>
                 <script src="/js/confirmDelete.js"></script>
+                <script src="/js/wishlist.js"></script>
 
   </body>

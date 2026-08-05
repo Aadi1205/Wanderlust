@@ -1,0 +1,29 @@
+<% layout('layouts/boilerplate') -%>
+
+  <body>
+
+    <div class="row">
+      <div class="col-12 col-md-8 offset-md-2 mt-3 px-3">
+        <h3 class="mb-4">My wishlist</h3>
+      </div>
+    </div>
+
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 col-12 col-md-8 offset-md-2 px-3">
+      <% if (listings.length===0) { %>
+        <div class="col-12 d-flex justify-content-center mt-2 mb-4">
+          <div class="text-center p-4 border rounded shadow-sm profile-empty-state">
+            <p class="text-muted mb-2">You haven't saved any listings yet.</p>
+            <a href="/listings" class="btn btn-outline-danger btn-sm">Explore listings</a>
+          </div>
+        </div>
+        <% } %>
+
+          <% const wishlistedIds=new Set(listings.map(function(listing) { return listing._id.toString() })); %>
+
+            <% for(let listing of listings) { %>
+              <%- include("../includes/listingCard.ejs", { listing, wishlistedIds }) %>
+                <% } %>
+    </div>
+
+  </body>
+  <script src="/js/wishlist.js"></script>

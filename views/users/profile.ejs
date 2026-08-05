@@ -1,0 +1,105 @@
+<% layout('layouts/boilerplate') -%>
+
+  <body>
+
+    <!-- Profile Header -->
+    <div class="row">
+      <div class="col-12 col-md-8 offset-md-2 mt-3 px-3">
+        <div class="profile-header">
+          <% if (profileUser.avatar && profileUser.avatar.url) { %>
+            <img src="<%= profileUser.avatar.url %>" alt="<%= profileUser.username %>" class="profile-avatar" />
+          <% } else { %>
+            <div class="profile-avatar profile-avatar-initials"><%= profileUser.initials %></div>
+          <% } %>
+
+          <div class="profile-info">
+            <h3 class="mb-0"><%= profileUser.fullName || profileUser.username %></h3>
+            <p class="profile-username">@<%= profileUser.username %></p>
+
+            <% if (profileUser.location) { %>
+              <p class="profile-meta"><i class="fa-solid fa-location-dot"></i> <%= profileUser.location %></p>
+            <% } %>
+
+            <% if (profileUser.joinedAt) { %>
+              <p class="profile-meta">
+                <i class="fa-regular fa-calendar"></i>
+                Hosting since <%= profileUser.joinedAt.toLocaleString("en-US", { month: "long", year: "numeric" }) %>
+              </p>
+            <% } %>
+
+            <% if (currUser && currUser._id.equals(profileUser._id)) { %>
+              <a href="/users/<%= profileUser._id %>/edit" class="btn btn-dark btn-sm profile-edit-btn">Edit profile</a>
+            <% } %>
+          </div>
+        </div>
+
+        <% if (profileUser.bio) { %>
+          <p class="profile-bio mt-3"><%= profileUser.bio %></p>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Listings -->
+    <div class="row mt-4">
+      <div class="col-12 col-md-8 offset-md-2 px-3">
+        <hr>
+        <h4 class="mb-3">Listings</h4>
+      </div>
+    </div>
+
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+      <% if (listings.length===0) { %>
+        <div class="col-12 d-flex justify-content-center mt-2 mb-4">
+          <div class="text-center p-4 border rounded shadow-sm profile-empty-state">
+            <% if (currUser && currUser._id.equals(profileUser._id)) { %>
+              <p class="text-muted mb-2">You haven't listed any properties yet.</p>
+              <a href="/listings/new" class="btn btn-outline-danger btn-sm">Add a listing</a>
+            <% } else { %>
+              <p class="text-muted mb-0"><%= profileUser.username %> hasn't listed any properties yet.</p>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+
+        <% const wishlistedIds=new Set((currUser && currUser.wishlist ? currUser.wishlist : []).map(function(id) {
+          return id.toString() })); %>
+
+          <% for(let listing of listings) { %>
+            <%- include("../includes/listingCard.ejs", { listing, wishlistedIds }) %>
+              <% } %>
+    </div>
+
+    <!-- Reviews -->
+    <% if (reviews.length> 0) { %>
+      <div class="row mt-3">
+        <div class="col-12 col-md-8 offset-md-2 px-3">
+          <hr>
+          <h4 class="mb-3">Recent reviews</h4>
+
+          <div class="row">
+            <% for (let review of reviews) { %>
+              <% const relatedListing=reviewListingMap[review._id.toString()]; %>
+                <div class="col-12 col-md-6 mb-3">
+                  <div class="review-card profile-review-card">
+                    <div class="review-header">
+                      <span class="starability-result" data-rating="<%= review.rating %>"></span>
+                      <% if (relatedListing) { %>
+                        <a href="/listings/<%= relatedListing._id %>" class="profile-review-listing-link">
+                          <%= relatedListing.title %>
+                        </a>
+                        <% } %>
+                    </div>
+
+                    <p class="review-comment">
+                      <%= review.comment %>
+                    </p>
+                  </div>
+                </div>
+                <% } %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+  </body>
+  <script src="/js/wishlist.js"></script>

@@ -1,0 +1,119 @@
+<% layout("layouts/boilerplate") %>
+
+  <div class="row mt-3">
+    <div class="col-12 col-md-8 offset-md-2 px-3">
+      <h3 class="mb-4">My trips</h3>
+
+      <div class="trips-tabs mb-4">
+        <a href="/trips?tab=upcoming" class="trips-tab <%= tab==='upcoming' ? 'active' : '' %>">
+          Upcoming <span class="trips-tab-count">
+            <%= counts.upcoming %>
+          </span>
+        </a>
+        <a href="/trips?tab=past" class="trips-tab <%= tab==='past' ? 'active' : '' %>">
+          Past <span class="trips-tab-count">
+            <%= counts.past %>
+          </span>
+        </a>
+        <a href="/trips?tab=cancelled" class="trips-tab <%= tab==='cancelled' ? 'active' : '' %>">
+          Cancelled <span class="trips-tab-count">
+            <%= counts.cancelled %>
+          </span>
+        </a>
+      </div>
+
+      <% if (bookings.length===0) { %>
+        <div class="trips-empty-state">
+          <% if (tab==='upcoming' ) { %>
+            <p class="text-muted mb-2">No upcoming trips yet.</p>
+            <a href="/listings" class="btn btn-outline-danger btn-sm">Explore listings</a>
+            <% } else if (tab==='past' ) { %>
+              <p class="text-muted mb-0">No past trips yet.</p>
+              <% } else { %>
+                <p class="text-muted mb-0">No cancelled trips.</p>
+                <% } %>
+        </div>
+        <% } %>
+
+          <% for (let booking of bookings) { %>
+            <% const title=booking.listingSnapshot?.title || booking.listing?.title; %>
+              <% const imageUrl=booking.listingSnapshot?.imageUrl || booking.listing?.image?.url; %>
+                <% const location=booking.listingSnapshot?.location || booking.listing?.location; %>
+
+                  <div class="trip-card-with-image mb-3">
+                    <% if (imageUrl) { %>
+                      <img src="<%= imageUrl %>" class="trip-card-img" alt="<%= title %>">
+                      <% } %>
+                        <div class="trip-card-body">
+                          <div class="trip-card-header">
+                            <% if (booking.listing) { %>
+                              <a href="/listings/<%= booking.listing._id %>">
+                                <%= title %>
+                              </a>
+                              <% } else { %>
+                                <span class="text-muted">
+                                  <%= title || "Listing no longer available" %>
+                                </span>
+                                <% } %>
+                                  <span class="badge trip-badge trip-badge-<%= booking.status %>">
+                                    <%= booking.status %>
+                                  </span>
+                          </div>
+
+                          <% if (location) { %>
+                            <p class="trip-card-location text-muted mb-1">
+                              <%= location %>
+                            </p>
+                            <% } %>
+
+                              <p class="trip-card-dates">
+                                <%= booking.checkIn.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) %>
+                                  &rarr;
+                                  <%= booking.checkOut.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) %>
+                                    &middot;
+                                    <%= booking.nights %> night<%= booking.nights> 1 ? "s" : "" %>
+                                      &middot;
+                                      <%= booking.guests %> guest<%= booking.guests> 1 ? "s" : "" %>
+                              </p>
+
+                              <p class="trip-card-total">&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %> paid
+                              </p>
+
+                              <% if (booking.refund && booking.refund.status !=="none" ) { %>
+                                <p class="trip-card-refund">
+                                  <%= booking.refund.status==='full' ? 'Fully refunded' : '50% refunded' %>
+                                </p>
+                                <% } %>
+
+                                  <div class="trip-card-actions">
+                                    <% if (booking.listing) { %>
+                                      <a href="/listings/<%= booking.listing._id %>"
+                                        class="btn btn-sm btn-outline-dark">View stay</a>
+                                      <% } %>
+
+                                        <% if (booking.status !=="pending" ) { %>
+                                          <a href="/bookings/<%= booking._id %>/invoice"
+                                            class="btn btn-sm btn-outline-dark">Download receipt</a>
+                                          <% } %>
+
+                                            <% if (booking.status==="pending" ) { %>
+                                              <a href="/bookings/<%= booking._id %>/pay"
+                                                class="btn btn-sm btn-dark add-btn">Complete payment</a>
+                                              <% } %>
+
+                                                <% if (booking.status==="pending" ||
+                                                  booking.status==="confirmed" ) { %>
+                                                  <form action="/bookings/<%= booking._id %>/cancel" method="POST"
+                                                    class="cancel-booking-form d-inline">
+                                                    <button type="submit"
+                                                      class="btn btn-sm btn-outline-danger">Cancel trip</button>
+                                                  </form>
+                                                  <% } %>
+                                  </div>
+                        </div>
+                  </div>
+                  <% } %>
+    </div>
+  </div>
+
+  <script src="/js/confirmDelete.js"></script>

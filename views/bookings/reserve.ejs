@@ -1,0 +1,53 @@
+<% layout("layouts/boilerplate") %>
+
+  <div class="row mt-3">
+    <div class="col-12 col-md-6 offset-md-3 px-3">
+      <h3 class="mb-4">Reserve your stay</h3>
+
+      <!-- Listing summary -->
+      <div class="reserve-summary-card mb-4">
+        <img
+          src="<%= listing.image.url || 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?auto=format&fit=crop&w=800&q=60' %>"
+          class="reserve-summary-img" alt="Listing image" />
+        <div class="reserve-summary-body">
+          <h5 class="mb-1">
+            <%= listing.title %>
+          </h5>
+          <p class="text-muted mb-1">
+            <%= listing.location %>, <%= listing.country %>
+          </p>
+          <p class="mb-0">&#8377;<%= listing.price.toLocaleString("en-IN") %> / night</p>
+        </div>
+      </div>
+
+      <!-- Booking form -->
+      <div class="booking-widget" data-price="<%= listing.price %>">
+        <form action="/listings/<%= listing._id %>/book" method="POST" id="bookingForm" novalidate>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label for="checkIn" class="form-label">Check-in</label>
+              <input type="date" class="form-control" id="checkIn" name="booking[checkIn]" required>
+            </div>
+            <div class="col-6">
+              <label for="checkOut" class="form-label">Check-out</label>
+              <input type="date" class="form-control" id="checkOut" name="booking[checkOut]" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="guests" class="form-label">Guests</label>
+            <input type="number" class="form-control" id="guests" name="booking[guests]" value="1" min="1" max="16"
+              required>
+          </div>
+
+          <div class="booking-price-breakdown" id="bookingPriceBreakdown">
+            <p class="text-muted mb-0">Select dates to see the price</p>
+          </div>
+
+          <button type="submit" class="btn btn-dark add-btn mt-3 w-100">Reserve</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/booking.js"></script>
