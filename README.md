@@ -10,11 +10,20 @@ A full-stack property listing web application where users can discover, create, 
 
 * 🔐 User authentication & authorization (Passport.js)
 * 🔒 Secure password hashing & session management (connect-mongo)
+* 🙍 User profiles - avatar (Cloudinary), bio, location, member-since date
+* 🏷️ Customer/owner role system with a "Become a host" upgrade flow
 * 🏠 Create, edit, delete property listings (CRUD)
 * 🖼️ Image uploads with Cloudinary
-* ⭐ Reviews & ratings system
+* 📅 Booking system - overlap-safe date selection, server-computed pricing,
+  cancellation rules, host dashboard, and a guest "My Trips" page
+* 💳 Real Razorpay payment integration - order creation, HMAC-verified
+  confirmation, signed webhook as source of truth, refunds on cancellation
+* 🧾 PDF booking receipts
+* ❤️ Wishlist (heart toggle) for saving listings
+* ⭐ Reviews & ratings, with cached average rating per listing
 * 🔍 Search listings by title or country
-* 🗂️ Category-based filtering
+* 🎛️ Left-hand filter sidebar - category, host, location, price, sorting,
+  AJAX filtering, and a mobile drawer
 * 🧭 Location geocoding with map coordinates
 * ⚙️ RESTful API architecture
 * 🧱 Middleware-based validation & protection
@@ -47,9 +56,15 @@ A full-stack property listing web application where users can discover, create, 
 * Cloudinary
 * Multer
 
+**Payments & Documents**
+
+* Razorpay
+* PDFKit (booking receipts)
+
 **Deployment**
 
 * Render
+* Docker
 
 ---
 
@@ -95,6 +110,10 @@ Open your browser at:
 ```
 http://localhost:8080
 ```
+
+> **Windows shortcut:** double-click [`start.bat`](start.bat) instead of steps
+> 2-4 - it installs dependencies if needed, checks for a `.env` file, and
+> starts the server.
 
 ---
 
@@ -220,14 +239,21 @@ docker compose up -d --build
 ```
 PROJECT/
 │── app.js
-│── models/
+│── models/          # listing, user, booking, payment, review
 │── routes/
-│── controllers/
+│── controllers/      # listings, users, bookings, payments, reviews
 │── views/
+│   │── bookings/     # reserve, pay, trips, host dashboard
+│   │── users/        # profile, edit profile, become host
+│   └── listings/
 │── public/
+│   │── css/
+│   └── js/            # booking, payment, wishlist, filter sidebar
+│── scripts/           # one-off data backfill scripts
 │── utils/
 │── .env (ignored)
 │── package.json
+│── start.bat          # Windows double-click launcher
 ```
 
 ---
