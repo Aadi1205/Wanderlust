@@ -289,6 +289,21 @@ PROJECT/
 ### Map 
 ![Map](screenshots/map.png)
 
+### Reservation
+![Reservation](screenshots/Reservation.png)
+
+### Booking
+![Booking](screenshots/Booking.png)
+
+### Razorpay Payment
+![Razorpay Payment](screenshots/RazorPay.png)
+
+### Trip History
+![Trip History](screenshots/history.png)
+
+### User Profile
+![User Profile](screenshots/profile.png)
+
 
 ---
 
